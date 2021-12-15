@@ -5,94 +5,86 @@
 // To conserve gas, efficient serialization is achieved through Borsh (http://borsh.io/)
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::{env, near_bindgen, setup_alloc};
-use near_sdk::collections::{UnorderedSet, UnorderedMap};
+use near_sdk::collections::{UnorderedMap};
+
+pub use crate::birthday::*;
+
+pub mod birthday;
 
 setup_alloc!();
 
+
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct Birthdays {
-    name_dates: UnorderedMap<String, UnorderedSet<String>>,
-    date_names: UnorderedMap<String, UnorderedSet<String>>,
+pub struct BirthdayContract {
+    records: UnorderedMap<String, Birthday>,
 }
 
-impl Default for Birthdays {
+impl Default for BirthdayContract {
   fn default() -> Self {
       env::panic(b"Birthdays contract should be initialized before using")
   }
 }
 
 #[near_bindgen]
-impl Birthdays {
+impl BirthdayContract {
     #[init]
     pub fn new() -> Self {
         assert!(env::state_read::<Self>().is_none(), "Contract is alraedy initialized");
 
-        Birthdays {
-            name_dates: UnorderedMap::new(b"a".to_vec()),
-            date_names: UnorderedMap::new(b"b".to_vec()),
+        BirthdayContract {
+            records: UnorderedMap::new(b"a".to_vec()),
         }
     }
 
-    pub fn add_birthday(&mut self, name: String, date: String) {
+    pub fn add(&mut self, name: String, date: String) {
         // validate the date
         //
-        match self.name_dates.get(&name) {
-            Some(mut record) => {
-                record.insert(&date);
-                self.name_dates.insert(&name, &record);
-            },
-            None => {
-                let set_name = name.clone();
-                let mut record = UnorderedSet::new(set_name.into_bytes());
-                record.insert(&date);
-                self.name_dates.insert(&name, &record);
+        let account_id = env::current_account_id();
+        match self.records.get(&account_id) {
+            Some(mut b) => {
+                b.add(name, date);
+                self.records.insert(&account_id, &b);
+                return
             }
-        }
-        // the date to names mapping
-        match self.date_names.get(&date) {
-            Some(mut record) => {
-                record.insert(&name);
-                self.date_names.insert(&date, &record);
-            },
             None => {
-                let set_date = date.clone();
-                let mut record = UnorderedSet::new(set_date.into_bytes());
-                record.insert(&name);
-                self.date_names.insert(&date, &record);
+                let id = account_id.clone();
+                let mut b = Birthday::new(id);
+                b.add(name, date);
+                self.records.insert(&account_id, &b);
+                return
             }
         }
     }
 
-    pub fn remove_birthday(&mut self, name: String, date: String) {
+    pub fn remove(&mut self, name: String, date: String) {
         // make sure both name and date are here so you don't remove the wrong
         // joe smith if there exist more than one.
-        match self.name_dates.get(&name) {
-            Some(mut record) => {
-                record.remove(&date);
-                self.name_dates.insert(&name, &record);
+        let account_id = env::current_account_id();
+        match self.records.get(&account_id) {
+            Some(mut b) => {
+                b.remove(name, date);
+                self.records.insert(&account_id, &b);
             },
             None => {
-                // name does not exist...
-            }
-        }
-        // the date to names mapping
-        match self.date_names.get(&date) {
-            Some(mut record) => {
-                record.remove(&name);
-                self.date_names.insert(&date, &record);
-            },
-            None => {
-                // date does not exist
+                // account does not exist...
             }
         }
     }
 
-    pub fn get_birthdays_date(&self, date: String) -> Option<Vec<String>> {
+    pub fn get_birthdays_for_date(&self, date: String) -> Option<Vec<String>> {
         // return all the names of folks with a birthday for this date
-        match self.date_names.get(&date) {
-            Some(record) => {
-                return Some(record.to_vec())
+        let account_id = env::current_account_id();
+        match self.records.get(&account_id) {
+            Some(b) => {
+                match b.get_date(date) {
+                    Some(r) => {
+                        return Some(r.to_vec())
+                    },
+                    None => {
+                        return None
+                    },
+                }
             },
             None => {
                 return None
@@ -101,14 +93,23 @@ impl Birthdays {
         }
     }
 
-    pub fn get_birthdays_name(&self, name: String) -> Option<Vec<String>> {
+    pub fn get_birthdays_for_name(&self, name: String) -> Option<Vec<String>> {
         // return all the dates of folks with a birthday for this name
-        match self.name_dates.get(&name) {
-            Some(record) => {
-                return Some(record.to_vec())
+        let account_id = env::current_account_id();
+        match self.records.get(&account_id) {
+            Some(b) => {
+                match b.get_name(name) {
+                    Some(r) => {
+                        return Some(r.to_vec())
+                    },
+                    None => {
+                        return None
+                    },
+                }
             },
             None => {
                 return None
+                // date does not exist
             }
         }
     }
@@ -158,26 +159,30 @@ mod tests {
     }
 
     #[test]
-    fn set_then_get_greeting() {
+    fn new_birthday() {
         let context = get_context(vec![], false);
         testing_env!(context);
-        let mut contract = Welcome::default();
-        contract.set_greeting("howdy".to_string());
+        let mut contract = Birthdays::new();
+        contract.add_birthday("Billy Joel".to_string(), "May 9th".to_string());
         assert_eq!(
-            "howdy".to_string(),
-            contract.get_greeting("bob_near".to_string())
+            "Billy Joel".to_string(),
+            contract.get_birthdays_date("May 9th".to_string())
+        );
+        assert_eq!(
+            "May 9th".to_string(),
+            contract.get_birthdays_Name("Billy Joel".to_string())
         );
     }
 
-    #[test]
-    fn get_default_greeting() {
-        let context = get_context(vec![], true);
-        testing_env!(context);
-        let contract = Welcome::default();
-        // this test did not call set_greeting so should return the default "Hello" greeting
-        assert_eq!(
-            "Hello".to_string(),
-            contract.get_greeting("francis.near".to_string())
-        );
-    }
+    // #[test]
+    // fn duplicate_name() {
+    //     let context = get_context(vec![], true);
+    //     testing_env!(context);
+    //     let contract = Birthdays::new();
+    //     // this test did not call set_greeting so should return the default "Hello" greeting
+    //     assert_eq!(
+    //         "Hello".to_string(),
+    //         contract.get_greeting("francis.near".to_string())
+    //     );
+    // }
 }
