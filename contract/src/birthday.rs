@@ -96,4 +96,17 @@ impl Birthday {
              }
          }
      }
+
+     pub fn get_all_names(&self) -> Vec<String> {
+         self.name_dates.keys_as_vector().to_vec()
+     }
+
+     pub fn get_all_dates(&self) -> Vec<String> {
+         self.date_names.keys_as_vector().to_vec()
+     }
+
+     // TODO: what is the best way to get all, the nested set..
+     pub fn get_all(&self) -> Vec<String> {
+         self.name_dates.keys_as_vector().to_vec()
+     }
 }

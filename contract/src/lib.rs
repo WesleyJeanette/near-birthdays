@@ -114,6 +114,55 @@ impl BirthdayContract {
         }
     }
 
+    pub fn get_all_birthdays_by_name(&self) -> Option<Vec<String>> {
+        // return all the dates of folks with a birthday for this name
+        let account_id = env::current_account_id();
+        match self.records.get(&account_id) {
+            Some(b) => {
+                return Some(b.get_all_names())
+            },
+            None => {
+                return None
+                // date does not exist
+            }
+        }
+    }
+
+    pub fn get_all_birthdays_by_date(&self) -> Option<Vec<String>> {
+        // return all the dates of folks with a birthday for this name
+        let account_id = env::current_account_id();
+        match self.records.get(&account_id) {
+            Some(b) => {
+                return Some(b.get_all_dates())
+            },
+            None => {
+                return None
+                // date does not exist
+            }
+        }
+    }
+
+    // pub fn get_birthdays(&self, name: Option<String>, date: Option<String>) -> Option<Vec<String>> {
+    //     // return all the dates of folks with a birthday for this name
+    //     let account_id = env::current_account_id();
+    //     let record = self.records.get(&account_id);
+    //     if is_some(record) {
+    //         if is_some(name) {
+    //             match Some(record).get_name(Some(name)) {
+    //                 Some(r) => {
+    //                     return Some(r.to_vec())
+    //                 },
+    //                 None => {
+    //                     return None
+    //                 },
+    //             }
+    //         }
+    //         // None => {
+    //         //     return None
+    //         //     // date does not exist
+    //         // }
+    //     }
+    // }
     // pub fn get_all_birthdays(&self) -> Vec<(String,String)> {
     //     self.name_dates.to_vec()
     // }
