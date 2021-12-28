@@ -93,19 +93,12 @@ impl BirthdayContract {
         }
     }
 
-    pub fn get_birthdays_for_name(&self, name: String) -> Option<Vec<String>> {
+    pub fn get_birthday_for_name(&self, name: String) -> Option<String> {
         // return all the dates of folks with a birthday for this name
         let account_id = env::current_account_id();
         match self.records.get(&account_id) {
             Some(b) => {
-                match b.get_name(name) {
-                    Some(r) => {
-                        return Some(r.to_vec())
-                    },
-                    None => {
-                        return None
-                    },
-                }
+                return b.get_name(name)
             },
             None => {
                 return None
@@ -114,12 +107,12 @@ impl BirthdayContract {
         }
     }
 
-    pub fn get_all_birthdays_by_name(&self) -> Option<Vec<String>> {
+    pub fn get_all_birthdays(&self) -> Option<Vec<(String, String)>> {
         // return all the dates of folks with a birthday for this name
         let account_id = env::current_account_id();
         match self.records.get(&account_id) {
             Some(b) => {
-                return Some(b.get_all_names())
+                return Some(b.get_all())
             },
             None => {
                 return None
@@ -128,19 +121,19 @@ impl BirthdayContract {
         }
     }
 
-    pub fn get_all_birthdays_by_date(&self) -> Option<Vec<String>> {
-        // return all the dates of folks with a birthday for this name
-        let account_id = env::current_account_id();
-        match self.records.get(&account_id) {
-            Some(b) => {
-                return Some(b.get_all_dates())
-            },
-            None => {
-                return None
-                // date does not exist
-            }
-        }
-    }
+    // pub fn get_all_birthdays_by_date(&self) -> Option<Vec<String>> {
+    //     // return all the dates of folks with a birthday for this name
+    //     let account_id = env::current_account_id();
+    //     match self.records.get(&account_id) {
+    //         Some(b) => {
+    //             return Some(b.get_all_dates())
+    //         },
+    //         None => {
+    //             return None
+    //             // date does not exist
+    //         }
+    //     }
+    // }
 
     // pub fn get_birthdays(&self, name: Option<String>, date: Option<String>) -> Option<Vec<String>> {
     //     // return all the dates of folks with a birthday for this name

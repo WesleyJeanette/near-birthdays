@@ -4,7 +4,7 @@ use near_sdk::collections::{UnorderedSet, UnorderedMap};
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Birthday {
     pub account_id: String,
-    pub name_dates: UnorderedMap<String, UnorderedSet<String>>,
+    pub name_dates: UnorderedMap<String, String>,
     pub date_names: UnorderedMap<String, UnorderedSet<String>>,
 }
 
@@ -21,18 +21,7 @@ impl Birthday {
     }
 
     pub fn add(&mut self, name: String, date: String) {
-        match self.name_dates.get(&name) {
-            Some(mut record) => {
-                record.insert(&date);
-                self.name_dates.insert(&name, &record);
-            },
-            None => {
-                let set_name = name.clone();
-                let mut record = UnorderedSet::new(set_name.into_bytes());
-                record.insert(&date);
-                self.name_dates.insert(&name, &record);
-            }
-        }
+        self.name_dates.insert(&name, &date);
         // the date to names mapping
         match self.date_names.get(&date) {
             Some(mut record) => {
@@ -49,17 +38,8 @@ impl Birthday {
     }
 
      pub fn remove(&mut self, name: String, date: String) {
-         // make sure both name and date are here so you don't remove the wrong
-         // joe smith if there exist more than one.
-         match self.name_dates.get(&name) {
-             Some(mut record) => {
-                 record.remove(&date);
-                 self.name_dates.insert(&name, &record);
-             },
-             None => {
-                 // name does not exist...
-             }
-         }
+         self.name_dates.remove(&name);
+
          // the date to names mapping
          match self.date_names.get(&date) {
              Some(mut record) => {
@@ -85,16 +65,9 @@ impl Birthday {
          }
      }
 
-     pub fn get_name(&self, name: String) -> Option<Vec<String>> {
+     pub fn get_name(&self, name: String) -> Option<String> {
          // return all the dates of folks with a birthday for this name
-         match self.name_dates.get(&name) {
-             Some(record) => {
-                 return Some(record.to_vec())
-             },
-             None => {
-                 return None
-             }
-         }
+         self.name_dates.get(&name)
      }
 
      pub fn get_all_names(&self) -> Vec<String> {
@@ -105,8 +78,7 @@ impl Birthday {
          self.date_names.keys_as_vector().to_vec()
      }
 
-     // TODO: what is the best way to get all, the nested set..
-     pub fn get_all(&self) -> Vec<String> {
-         self.name_dates.keys_as_vector().to_vec()
+     pub fn get_all(&self) -> Vec<(String, String)> {
+         self.name_dates.to_vec()
      }
 }
