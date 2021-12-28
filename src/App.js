@@ -11,6 +11,7 @@ import * as nearAPI from 'near-api-js';
 
 const BOATLOAD_OF_GAS = Big(3).times(10 ** 13).toFixed();
 const { utils } = nearAPI;
+const LOOK_AHEAD = 7;
 
 const App = ({ contract, currentUser, nearConfig, wallet }) => {
   // use React Hooks to store names in component state
@@ -40,31 +41,17 @@ const App = ({ contract, currentUser, nearConfig, wallet }) => {
   };
 
   const lookahead = (name, upcoming) => {
-    let today = moment().format("DDD");
-    let look_ahead = moment().add(7, 'days').format("DDD");
+
+    let today = Number(moment().format("DDD"));
+    let look_ahead = Number(moment().add(LOOK_AHEAD, 'days').format("DDD"));
     let myDate = moment(name[1], ["MMM Do"], true);
-    let date_of_year = myDate.format("DDD");
-    console.log(name[0])
-    console.log(name[1])
-    console.log(today)
-    console.log(look_ahead)
-    console.log(date_of_year)
+    let date_of_year = Number(myDate.format("DDD"));
     if (today <= date_of_year && date_of_year <= look_ahead) {
-      //upcoming.push({name: name[0], birthday: myDate.format("MMM Do")})
-      //upcoming.push({name: name[0], birthday: myDate})
-    console.log("adding normal")
-    console.log(name[0])
-    console.log(name[1])
-      upcoming.push({name: name[0], birthday: myDate, day: date_of_year})
+      upcoming.push({name: name[0], birthday: name[1], day: date_of_year})
     }
     // end of year roll over
-          // if look ahead is < 7
-    if (look_ahead < 7 && date_of_year <= look_ahead) {
-    console.log("adding overflow")
-    console.log(name[0])
-    console.log(name[1])
-      //upcoming.push({name: name[0], birthday: myDate.format("MMM Do")})
-      upcoming.push({name: name[0], birthday: myDate, day: date_of_year})
+    if (look_ahead < LOOK_AHEAD && date_of_year <= look_ahead) {
+      upcoming.push({name: name[0], birthday: name[1], day: date_of_year})
     }
   }
 

@@ -7,10 +7,10 @@ export default function UpcomingBirthdays({ birthdays }) {
     <>
       <h2>Upcoming Birthdays:</h2>
       {birthdays
-         .sort((a, b) => a[2] < b[2] ? 1 : -1)
+         .sort((a, b) => a.day > b.day ? 1 : -1)
          .map((result, i) =>
         <p key={i} className="results">
-          <strong>{result[0]}</strong>:  {result[1]}
+          <strong>{result.name}</strong>:  {result.birthday}
         </p>
       )}
     </>
