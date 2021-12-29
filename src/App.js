@@ -164,7 +164,7 @@ const App = ({ contract, currentUser, nearConfig, wallet }) => {
         <p> {results.date}</p>
         <button onClick={removeByName}>Remove {results.name}</button>
         </div>
-        : <p> Select name to see birthday</p>
+        : <p></p>
       }
       </>
       <>
