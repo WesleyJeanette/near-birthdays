@@ -2,6 +2,12 @@ near-birthdays Smart Contract
 ==================
 
 A [smart contract] written in [Rust] for an app initialized with [create-near-app]
+There are a number of functions you can run in this contract. They include:
+add - to add a new birthday,
+remove - to remove a birthday,
+get_birthday_for_name - to find a birthday by name,
+get_birthdays_for_date - to list all birthdays for the date,
+get_all_birthdays - to list all birthdays.
 
 
 Quick Start

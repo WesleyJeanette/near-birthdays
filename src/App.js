@@ -37,7 +37,22 @@ const App = ({ contract, currentUser, nearConfig, wallet }) => {
     let bday = await contract.get_birthday_for_name({
       name: selectedName.value
     });
-    setResults(bday);
+    setResults({name: selectedName.value, date: bday});
+  };
+
+  const removeByName = async event => {
+    if (selectedName == null) {
+      console.log("nothing selected");
+      return;
+    }
+    contract.remove({
+      name: selectedName.value,
+      date: results.date
+    },
+    BOATLOAD_OF_GAS,
+    );
+    setResults(null);
+    resetAll();
   };
 
   const lookahead = (name, upcoming) => {
@@ -140,8 +155,12 @@ const App = ({ contract, currentUser, nearConfig, wallet }) => {
       }
       </>
       <>
-      { currentUser && results &&
-        <p> {results}</p>
+      { currentUser && results.name
+        ? <div>
+        <p> {results.date}</p>
+        <button onClick={removeByName}>Remove {results.name}</button>
+        </div>
+        : <p> Select name to see birthday</p>
       }
       </>
       <>

@@ -38,7 +38,17 @@ impl Birthday {
     }
 
      pub fn remove(&mut self, name: String, date: String) {
-         self.name_dates.remove(&name);
+         match self.name_dates.get(&name) {
+             Some(record) => {
+                 if record != date {
+                     return
+                 }
+                 self.name_dates.remove(&name);
+             },
+             None => {
+                 return
+             }
+         }
 
          // the date to names mapping
          match self.date_names.get(&date) {

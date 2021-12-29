@@ -120,45 +120,6 @@ impl BirthdayContract {
             }
         }
     }
-
-    // pub fn get_all_birthdays_by_date(&self) -> Option<Vec<String>> {
-    //     // return all the dates of folks with a birthday for this name
-    //     let account_id = env::current_account_id();
-    //     match self.records.get(&account_id) {
-    //         Some(b) => {
-    //             return Some(b.get_all_dates())
-    //         },
-    //         None => {
-    //             return None
-    //             // date does not exist
-    //         }
-    //     }
-    // }
-
-    // pub fn get_birthdays(&self, name: Option<String>, date: Option<String>) -> Option<Vec<String>> {
-    //     // return all the dates of folks with a birthday for this name
-    //     let account_id = env::current_account_id();
-    //     let record = self.records.get(&account_id);
-    //     if is_some(record) {
-    //         if is_some(name) {
-    //             match Some(record).get_name(Some(name)) {
-    //                 Some(r) => {
-    //                     return Some(r.to_vec())
-    //                 },
-    //                 None => {
-    //                     return None
-    //                 },
-    //             }
-    //         }
-    //         // None => {
-    //         //     return None
-    //         //     // date does not exist
-    //         // }
-    //     }
-    // }
-    // pub fn get_all_birthdays(&self) -> Vec<(String,String)> {
-    //     self.name_dates.to_vec()
-    // }
 }
 
 /*
@@ -204,27 +165,109 @@ mod tests {
     fn new_birthday() {
         let context = get_context(vec![], false);
         testing_env!(context);
-        let mut contract = Birthdays::new();
-        contract.add_birthday("Billy Joel".to_string(), "May 9th".to_string());
+        let mut contract = BirthdayContract::new();
+        contract.add("Billy Joel".to_string(), "May 9th".to_string());
         assert_eq!(
-            "Billy Joel".to_string(),
-            contract.get_birthdays_date("May 9th".to_string())
+            Some(vec!["Billy Joel".to_string()]),
+            contract.get_birthdays_for_date("May 9th".to_string())
         );
         assert_eq!(
-            "May 9th".to_string(),
-            contract.get_birthdays_Name("Billy Joel".to_string())
+            Some("May 9th".to_string()),
+            contract.get_birthday_for_name("Billy Joel".to_string())
         );
     }
 
-    // #[test]
-    // fn duplicate_name() {
-    //     let context = get_context(vec![], true);
-    //     testing_env!(context);
-    //     let contract = Birthdays::new();
-    //     // this test did not call set_greeting so should return the default "Hello" greeting
-    //     assert_eq!(
-    //         "Hello".to_string(),
-    //         contract.get_greeting("francis.near".to_string())
-    //     );
-    // }
+    #[test]
+    fn update_birthday() {
+        let context = get_context(vec![], false);
+        testing_env!(context);
+        let mut contract = BirthdayContract::new();
+        contract.add("Billy Joel".to_string(), "May 9th".to_string());
+        assert_eq!(
+            Some("May 9th".to_string()),
+            contract.get_birthday_for_name("Billy Joel".to_string())
+        );
+        contract.add("Billy Joel".to_string(), "May 19th".to_string());
+        assert_eq!(
+            Some("May 19th".to_string()),
+            contract.get_birthday_for_name("Billy Joel".to_string())
+        );
+    }
+
+    #[test]
+    fn remove_birthday() {
+        let context = get_context(vec![], false);
+        testing_env!(context);
+        let mut contract = BirthdayContract::new();
+        contract.add("Billy Joel".to_string(), "May 9th".to_string());
+        assert_eq!(
+            Some("May 9th".to_string()),
+            contract.get_birthday_for_name("Billy Joel".to_string())
+        );
+        contract.add("Ghostface Killah".to_string(), "May 9th".to_string());
+        assert_eq!(
+            Some("May 9th".to_string()),
+            contract.get_birthday_for_name("Ghostface Killah".to_string())
+        );
+        contract.remove("Billy Joel".to_string(), "May 9th".to_string());
+        assert_eq!(
+            None,
+            contract.get_birthday_for_name("Billy Joel".to_string())
+        );
+        // wrong date
+        contract.remove("Ghostface Killah".to_string(), "May 19th".to_string());
+        assert_eq!(
+            Some("May 9th".to_string()),
+            contract.get_birthday_for_name("Ghostface Killah".to_string())
+        );
+        // wrong name
+        contract.remove("Ghostface Killahs".to_string(), "May 9th".to_string());
+        assert_eq!(
+            Some("May 9th".to_string()),
+            contract.get_birthday_for_name("Ghostface Killah".to_string())
+        );
+    }
+
+    #[test]
+    fn same_date() {
+        let context = get_context(vec![], false);
+        testing_env!(context);
+        let mut contract = BirthdayContract::new();
+        contract.add("Billy Joel".to_string(), "May 9th".to_string());
+        assert_eq!(
+            Some("May 9th".to_string()),
+            contract.get_birthday_for_name("Billy Joel".to_string())
+        );
+        contract.add("Ghostface Killah".to_string(), "May 9th".to_string());
+        assert_eq!(
+            Some("May 9th".to_string()),
+            contract.get_birthday_for_name("Ghostface Killah".to_string())
+        );
+        assert_eq!(
+            Some(vec!["Billy Joel".to_string(),"Ghostface Killah".to_string()]),
+            contract.get_birthdays_for_date("May 9th".to_string())
+        );
+    }
+
+    #[test]
+    fn several_dates() {
+        let context = get_context(vec![], false);
+        testing_env!(context);
+        let mut contract = BirthdayContract::new();
+        contract.add("RZA".to_string(), "July 5th".to_string());
+        assert_eq!(
+            Some("July 5th".to_string()),
+            contract.get_birthday_for_name("RZA".to_string())
+        );
+        contract.add("Ghostface Killah".to_string(), "May 9th".to_string());
+        assert_eq!(
+            Some("May 9th".to_string()),
+            contract.get_birthday_for_name("Ghostface Killah".to_string())
+        );
+        contract.get_all_birthdays();
+        assert_eq!(
+            Some(vec![("RZA".to_string(), "July 5th".to_string()),("Ghostface Killah".to_string(),"May 9th".to_string())]),
+            contract.get_all_birthdays()
+        );
+    }
 }

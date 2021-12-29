@@ -1,7 +1,12 @@
 near-birthdays
 ==================
 
-This app was initialized with [create-near-app]
+This app was initialized with [create-near-app]. It includes
+both a contract written in rust as well as a front end to add
+and view your contacts birthdays. Never forget an upcoming birthday
+again. Used in conjunction with a deployed front end you can easily add
+and update contacts birthdays with a Month Day format. It also will show
+you any birthdays that are upcoming.
 
 
 Quick Start
