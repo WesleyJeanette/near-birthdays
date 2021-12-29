@@ -74,6 +74,10 @@ const App = ({ contract, currentUser, nearConfig, wallet }) => {
     let names = await contract.get_all_birthdays();
     let avail = [];
 
+    if (names == null) {
+      console.log("nothing saved yet");
+      return;
+    }
     names.map((name, i) => avail.push({value: name[0], label: name[0]}))
     setNames(avail);
 

@@ -1,0 +1,14 @@
+source neardev/dev-account.env
+near dev-deploy out/main.wasm
+ID=lifeaswesknowit.testnet
+
+near call $CONTRACT_NAME new '' --accountId $ID
+near call $CONTRACT_NAME add '{"name": "Billy Joel", "date": "May 9th"}' --accountId $ID
+
+near view $CONTRACT_NAME get_all_birthdays '{}' --accountId $ID
+near view $CONTRACT_NAME get_birthday_for_name '{"name": "Billy Joel"}' --accountId $ID
+near view $CONTRACT_NAME get_birthdays_for_date '{"date": "May 9th"}' --accountId $ID
+
+near call $CONTRACT_NAME remove '{"name": "Billy Joel", "date": "May 9th"}' --accountId $ID
+near view $CONTRACT_NAME get_all_birthdays '{}' --accountId $ID
+
