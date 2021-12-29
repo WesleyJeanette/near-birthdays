@@ -46,7 +46,7 @@ const App = ({ contract, currentUser, nearConfig, wallet }) => {
       return;
     }
     contract.remove({
-      name: selectedName.value,
+      name: results.name,
       date: results.date
     },
     BOATLOAD_OF_GAS,
