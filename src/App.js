@@ -61,7 +61,7 @@ const App = ({ contract, currentUser, nearConfig, wallet }) => {
     let look_ahead = Number(moment().add(LOOK_AHEAD, 'days').format("DDD"));
     let myDate = moment(name[1], ["MMM Do"], true);
     let date_of_year = Number(myDate.format("DDD"));
-    if (today <= date_of_year && date_of_year <= look_ahead) {
+    if (today <= date_of_year && (date_of_year <= look_ahead || today + LOOK_AHEAD >= 365)) {
       upcoming.push({name: name[0], birthday: name[1], day: date_of_year})
     }
     // end of year roll over
